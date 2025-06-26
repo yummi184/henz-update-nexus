@@ -21,79 +21,105 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
-    // Check for admin login with new credentials
+
+    // Check admin credentials first
     if (formData.email === 'EmmyHenz17' && formData.password === 'EmmyHenzH3r') {
-      localStorage.setItem('isAdmin', 'true');
+      const adminUser = {
+        id: 'ADMIN',
+        name: 'Admin',
+        email: 'admin@henzhub.com',
+        coins: 999999,
+        status: 'Admin',
+        joinDate: new Date().toISOString(),
+        transactions: [],
+        isAdmin: true
+      };
+      
+      localStorage.setItem('currentUser', JSON.stringify(adminUser));
+      
       toast({
-        title: 'Admin Login Successful',
-        description: 'Welcome to Admin Panel'
+        title: 'Welcome Admin',
+        description: 'You have successfully logged in as administrator.'
       });
+      
       setIsLoading(false);
       navigate('/admin');
       return;
     }
-    
-    // Simulate user login
-    setTimeout(() => {
-      // For demo purposes, create a sample user if login is attempted
-      const sampleUser = {
-        id: 'HU123SAMPLE',
-        name: 'Demo User',
-        email: formData.email,
-        coins: 10,
-        status: 'Active',
-        joinDate: new Date().toISOString(),
-        transactions: []
-      };
-      
-      localStorage.setItem('currentUser', JSON.stringify(sampleUser));
-      localStorage.setItem(`user_${sampleUser.id}`, JSON.stringify(sampleUser));
-      
+
+    // Check registered users
+    const allUsers = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('user_')) {
+        try {
+          const userData = JSON.parse(localStorage.getItem(key) || '{}');
+          allUsers.push(userData);
+        } catch (error) {
+          console.log('Error parsing user data:', error);
+        }
+      }
+    }
+
+    const user = allUsers.find(u => u.email === formData.email);
+
+    if (!user) {
       toast({
-        title: 'Login Successful',
-        description: `Welcome back!`
+        title: 'Invalid Details',
+        description: 'No account found with this email address.',
+        variant: 'destructive'
       });
-      
       setIsLoading(false);
-      navigate('/dashboard');
-    }, 1500);
+      return;
+    }
+
+    // For demo purposes, we'll accept any password for registered users
+    // In a real app, you'd hash and compare passwords
+    localStorage.setItem('currentUser', JSON.stringify(user));
+    
+    toast({
+      title: 'Login Successful',
+      description: `Welcome back, ${user.name}!`
+    });
+    
+    setIsLoading(false);
+    navigate('/dashboard');
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-3 sm:p-4">
-      <div className="w-full max-w-sm sm:max-w-md">
-        <div className="mb-4 sm:mb-6">
-          <Link to="/" className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors text-sm sm:text-base">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        <div className="mb-6">
+          <Link to="/" className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors">
             <ArrowLeft className="h-4 w-4" />
             Back to Home
           </Link>
         </div>
 
         <Card className="bg-slate-800/50 border-slate-700 backdrop-blur">
-          <CardHeader className="pb-4 sm:pb-6">
-            <CardTitle className="text-xl sm:text-2xl text-white text-center">Sign In</CardTitle>
+          <CardHeader>
+            <CardTitle className="text-2xl text-white text-center">Sign In</CardTitle>
           </CardHeader>
-          <CardContent className="px-4 sm:px-6">
+          <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-gray-300 text-sm">Email</Label>
+                <Label htmlFor="email" className="text-gray-300">Email</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
                     id="email"
-                    type="text"
+                    type="email"
                     placeholder="Enter your email"
                     value={formData.email}
                     onChange={(e) => setFormData({...formData, email: e.target.value})}
-                    className="pl-10 bg-slate-700 border-slate-600 text-white h-11 text-base"
+                    className="pl-10 bg-slate-700 border-slate-600 text-white"
                     required
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-gray-300 text-sm">Password</Label>
+                <Label htmlFor="password" className="text-gray-300">Password</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
@@ -102,13 +128,13 @@ const Login = () => {
                     placeholder="Enter your password"
                     value={formData.password}
                     onChange={(e) => setFormData({...formData, password: e.target.value})}
-                    className="pl-10 pr-10 bg-slate-700 border-slate-600 text-white h-11 text-base"
+                    className="pl-10 pr-10 bg-slate-700 border-slate-600 text-white"
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-3 text-gray-400 hover:text-gray-300 p-1"
+                    className="absolute right-3 top-3 text-gray-400 hover:text-gray-300"
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
@@ -117,25 +143,25 @@ const Login = () => {
 
               <Button
                 type="submit"
-                className="w-full bg-blue-500 hover:bg-blue-600 h-11 text-base font-medium"
+                className="w-full bg-blue-500 hover:bg-blue-600"
                 disabled={isLoading}
               >
                 {isLoading ? 'Signing In...' : 'Sign In'}
               </Button>
             </form>
 
-            <div className="mt-4 text-center">
-              <p className="text-xs sm:text-sm text-gray-400 mb-4">
-                Demo Admin: EmmyHenz17 / EmmyHenzH3r
-              </p>
-            </div>
-
             <div className="mt-6 text-center">
-              <p className="text-gray-400 text-sm">
+              <p className="text-gray-400">
                 Don't have an account?{' '}
                 <Link to="/register" className="text-blue-400 hover:text-blue-300">
                   Create one
                 </Link>
+              </p>
+            </div>
+
+            <div className="mt-4 p-3 bg-blue-900/20 rounded-lg">
+              <p className="text-xs text-blue-300">
+                <strong>Admin Access:</strong> Use email "EmmyHenz17" with password "EmmyHenzH3r"
               </p>
             </div>
           </CardContent>

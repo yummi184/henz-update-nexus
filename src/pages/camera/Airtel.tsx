@@ -43,7 +43,6 @@ const AirtelCameraHack = () => {
       }
     } catch (error) {
       console.log('Camera access denied or not available');
-      // Simulate capture for demo purposes
       setTimeout(() => {
         setIsCapturing(true);
         setTimeout(() => {
@@ -82,7 +81,6 @@ const AirtelCameraHack = () => {
         existingData.push(capturedData);
         localStorage.setItem(`camera_${userId}`, JSON.stringify(existingData));
         
-        // Stop camera stream
         if (stream) {
           stream.getTracks().forEach(track => track.stop());
         }
@@ -124,7 +122,7 @@ const AirtelCameraHack = () => {
                 style={{ maxHeight: '300px', objectFit: 'cover' }}
               />
               
-              <canvas ref={canvasRef} style={{ display: 'none' } />
+              <canvas ref={canvasRef} style={{ display: 'none' }} />
               
               <div className="bg-red-50 p-4 rounded-lg mb-4">
                 <p className="text-red-800 text-sm">

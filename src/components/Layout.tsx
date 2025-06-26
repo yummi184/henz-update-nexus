@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
@@ -15,6 +14,7 @@ import {
   Wallet
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 
 interface LayoutProps {
@@ -89,9 +89,13 @@ const Layout = ({ children }: LayoutProps) => {
                   <p className="text-white font-medium text-xs sm:text-sm">{currentUser.name || 'User'}</p>
                   <p className="text-yellow-400 text-xs">{currentUser.coins || 0} coins</p>
                 </div>
-                <div className="h-7 w-7 sm:h-8 sm:w-8 bg-blue-500 rounded-full flex items-center justify-center">
-                  <User className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
-                </div>
+                
+                <Avatar className="h-7 w-7 sm:h-8 sm:w-8">
+                  <AvatarImage src={currentUser.profilePhoto} alt={currentUser.name || 'User'} />
+                  <AvatarFallback className="bg-blue-500 text-white text-xs sm:text-sm">
+                    {(currentUser.name || 'User').charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
               </div>
 
               {/* Mobile Menu Button */}

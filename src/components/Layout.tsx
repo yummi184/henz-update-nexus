@@ -63,43 +63,43 @@ const Layout = ({ children }: LayoutProps) => {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
       {/* Top Bar */}
       <header className="bg-slate-800/50 backdrop-blur border-b border-slate-700">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
+        <div className="container mx-auto px-3 sm:px-4">
+          <div className="flex items-center justify-between h-14 sm:h-16">
             {/* Logo */}
             <Link to="/dashboard" className="flex items-center gap-2">
-              <div className="h-8 w-8 bg-blue-500 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold">H</span>
+              <div className="h-7 w-7 sm:h-8 sm:w-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm sm:text-base">H</span>
               </div>
-              <span className="text-white font-semibold hidden sm:block">Henz Update Hub</span>
+              <span className="text-white font-semibold hidden sm:block text-sm sm:text-base">Henz Update Hub</span>
             </Link>
 
             {/* User Info */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               {currentUser.id && (
-                <div className="hidden sm:flex items-center gap-2 bg-slate-700 px-3 py-1 rounded-lg">
-                  <span className="text-gray-300 text-sm">ID: {currentUser.id}</span>
-                  <button onClick={copyUserId} className="text-blue-400 hover:text-blue-300">
-                    <Copy className="h-4 w-4" />
+                <div className="hidden sm:flex items-center gap-2 bg-slate-700 px-2 sm:px-3 py-1 rounded-lg">
+                  <span className="text-gray-300 text-xs sm:text-sm">ID: {currentUser.id}</span>
+                  <button onClick={copyUserId} className="text-blue-400 hover:text-blue-300 p-1">
+                    <Copy className="h-3 w-3 sm:h-4 sm:w-4" />
                   </button>
                 </div>
               )}
               
               <div className="flex items-center gap-2">
                 <div className="text-right">
-                  <p className="text-white font-medium">{currentUser.name || 'User'}</p>
-                  <p className="text-yellow-400 text-sm">{currentUser.coins || 0} coins</p>
+                  <p className="text-white font-medium text-xs sm:text-sm">{currentUser.name || 'User'}</p>
+                  <p className="text-yellow-400 text-xs">{currentUser.coins || 0} coins</p>
                 </div>
-                <div className="h-8 w-8 bg-blue-500 rounded-full flex items-center justify-center">
-                  <User className="h-4 w-4 text-white" />
+                <div className="h-7 w-7 sm:h-8 sm:w-8 bg-blue-500 rounded-full flex items-center justify-center">
+                  <User className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
                 </div>
               </div>
 
               {/* Mobile Menu Button */}
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="md:hidden text-white"
+                className="md:hidden text-white p-2"
               >
-                {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+                {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
               </button>
             </div>
           </div>
@@ -112,8 +112,8 @@ const Layout = ({ children }: LayoutProps) => {
           fixed md:static inset-y-0 left-0 z-50 w-64 bg-slate-800/50 backdrop-blur border-r border-slate-700 transform transition-transform duration-300 ease-in-out
           ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
         `}>
-          <nav className="p-4 mt-4">
-            <ul className="space-y-2">
+          <nav className="p-3 sm:p-4 mt-2 sm:mt-4">
+            <ul className="space-y-1 sm:space-y-2">
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = location.pathname === item.path;
@@ -124,7 +124,7 @@ const Layout = ({ children }: LayoutProps) => {
                       to={item.path}
                       onClick={() => setIsMobileMenuOpen(false)}
                       className={`
-                        flex items-center gap-3 px-4 py-3 rounded-lg transition-colors
+                        flex items-center gap-3 px-3 sm:px-4 py-3 sm:py-3 rounded-lg transition-colors min-h-[44px] touch-manipulation
                         ${isActive 
                           ? 'bg-blue-500 text-white' 
                           : 'text-gray-300 hover:bg-slate-700 hover:text-white'
@@ -132,18 +132,18 @@ const Layout = ({ children }: LayoutProps) => {
                       `}
                     >
                       <Icon className="h-5 w-5" />
-                      <span>{item.label}</span>
+                      <span className="text-sm sm:text-base">{item.label}</span>
                     </Link>
                   </li>
                 );
               })}
             </ul>
 
-            <div className="mt-8">
+            <div className="mt-6 sm:mt-8">
               <Button
                 onClick={handleLogout}
                 variant="outline"
-                className="w-full bg-transparent border-red-500 text-red-400 hover:bg-red-500 hover:text-white"
+                className="w-full bg-transparent border-red-500 text-red-400 hover:bg-red-500 hover:text-white h-11 text-sm font-medium touch-manipulation"
               >
                 <LogOut className="h-4 w-4 mr-2" />
                 Logout
@@ -153,7 +153,7 @@ const Layout = ({ children }: LayoutProps) => {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 p-4 md:p-6">
+        <main className="flex-1 p-3 sm:p-4 md:p-6">
           {children}
         </main>
       </div>

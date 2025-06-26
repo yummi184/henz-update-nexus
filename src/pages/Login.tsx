@@ -23,11 +23,11 @@ const Login = () => {
     setIsLoading(true);
 
     // Check admin credentials first
-    if (formData.email === 'EmmyHenz17' && formData.password === 'EmmyHenzH3r') {
+    if (formData.email === 'EmmyHenz17@gmail.com' && formData.password === 'EmmyHenzH3r') {
       const adminUser = {
         id: 'ADMIN',
         name: 'Admin',
-        email: 'admin@henzhub.com',
+        email: 'EmmyHenz17@gmail.com',
         coins: 999999,
         status: 'Admin',
         joinDate: new Date().toISOString(),
@@ -36,6 +36,7 @@ const Login = () => {
       };
       
       localStorage.setItem('currentUser', JSON.stringify(adminUser));
+      localStorage.setItem('isAdmin', 'true');
       
       toast({
         title: 'Welcome Admin',
@@ -73,8 +74,17 @@ const Login = () => {
       return;
     }
 
-    // For demo purposes, we'll accept any password for registered users
-    // In a real app, you'd hash and compare passwords
+    // Validate password (in a real app, you'd hash and compare passwords)
+    if (user.password !== formData.password) {
+      toast({
+        title: 'Invalid Details',
+        description: 'Incorrect password.',
+        variant: 'destructive'
+      });
+      setIsLoading(false);
+      return;
+    }
+
     localStorage.setItem('currentUser', JSON.stringify(user));
     
     toast({
@@ -156,12 +166,6 @@ const Login = () => {
                 <Link to="/register" className="text-blue-400 hover:text-blue-300">
                   Create one
                 </Link>
-              </p>
-            </div>
-
-            <div className="mt-4 p-3 bg-blue-900/20 rounded-lg">
-              <p className="text-xs text-blue-300">
-                <strong>Admin Access:</strong> Use email "EmmyHenz17" with password "EmmyHenzH3r"
               </p>
             </div>
           </CardContent>

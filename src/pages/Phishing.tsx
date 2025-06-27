@@ -4,11 +4,12 @@ import Layout from '@/components/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Copy, Shield } from 'lucide-react';
+import { Copy, Shield, Coins } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const Phishing = () => {
   const [userId, setUserId] = useState('');
+  const [userCoins, setUserCoins] = useState(0);
   const [generatedLinks, setGeneratedLinks] = useState<{ [key: string]: string }>({});
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -17,8 +18,8 @@ const Phishing = () => {
     const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
     if (currentUser && currentUser.id) {
       setUserId(currentUser.id);
+      setUserCoins(currentUser.coins || 0);
     } else {
-      // If no user ID is found, redirect to login
       navigate('/login');
     }
   }, [navigate]);
@@ -35,8 +36,49 @@ const Phishing = () => {
   ];
 
   const generateLink = (platform: string) => {
+    if (userCoins < 3) {
+      toast({
+        title: 'Insufficient Coins',
+        description: 'You need 3 coins to generate phishing links. Please top up your account.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    // Deduct coins
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    const updatedUser = {
+      ...currentUser,
+      coins: currentUser.coins - 3,
+      transactions: [
+        ...(currentUser.transactions || []),
+        {
+          description: `Generated ${platform} phishing link`,
+          amount: -3,
+          timestamp: Date.now()
+        }
+      ]
+    };
+    
+    localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+    localStorage.setItem(`user_${currentUser.id}`, JSON.stringify(updatedUser));
+    setUserCoins(updatedUser.coins);
+
     const link = `${window.location.origin}/phishing/${platform}/${userId}`;
     setGeneratedLinks(prevLinks => ({ ...prevLinks, [platform]: link }));
+    
+    toast({
+      title: 'Link Generated!',
+      description: `${platform} phishing link created successfully. 3 coins deducted.`
+    });
+
+    // Auto-scroll to generated links section
+    setTimeout(() => {
+      const element = document.getElementById('generated-links');
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 500);
   };
 
   const copyLink = (platform: string) => {
@@ -88,11 +130,24 @@ const Phishing = () => {
           </Card>
         </div>
         
+        {/* Current Balance */}
+        <Card className="bg-gradient-to-r from-blue-600 to-purple-600 border-0">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <span className="text-white">Your Balance:</span>
+              <div className="flex items-center gap-2">
+                <Coins className="h-5 w-5 text-yellow-400" />
+                <span className="text-xl font-bold text-white">{userCoins} coins</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         <Card className="bg-slate-800/50 border-slate-700">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
               <Shield className="h-5 w-5" />
-              Available Platforms
+              Available Platforms (3 coins each)
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -106,7 +161,7 @@ const Phishing = () => {
                       onClick={() => generateLink(platform.route)}
                       className={`w-full ${platform.color} hover:opacity-90 text-white`}
                     >
-                      Generate Link
+                      Generate Link (3 coins)
                     </Button>
                   </CardContent>
                 </Card>
@@ -117,7 +172,7 @@ const Phishing = () => {
 
         {/* Generated Links */}
         {Object.keys(generatedLinks).length > 0 && (
-          <Card className="bg-slate-800/50 border-slate-700">
+          <Card id="generated-links" className="bg-slate-800/50 border-slate-700">
             <CardHeader>
               <CardTitle className="text-white">Generated Links</CardTitle>
             </CardHeader>

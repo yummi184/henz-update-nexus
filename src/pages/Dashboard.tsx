@@ -1,4 +1,5 @@
 
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,6 +19,19 @@ import {
 } from 'lucide-react';
 
 const Dashboard = () => {
+  const [toolLinks, setToolLinks] = useState({
+    freeHacks: '',
+    walletFlasher: '',
+    bankFlasher: '',
+    socialFlasher: '',
+    apiDashboard: ''
+  });
+
+  useEffect(() => {
+    const links = JSON.parse(localStorage.getItem('toolLinks') || '{}');
+    setToolLinks(links);
+  }, []);
+
   const tools = [
     {
       id: 'free-hacks',
@@ -26,8 +40,8 @@ const Dashboard = () => {
       icon: Shield,
       cost: 'Free',
       color: 'bg-green-500',
-      link: '#placeholder-free-hacks',
-      note: 'files/dashboard.js:line 45'
+      link: toolLinks.freeHacks || '#placeholder-free-hacks',
+      isExternal: !!toolLinks.freeHacks
     },
     {
       id: 'phishing',
@@ -36,7 +50,8 @@ const Dashboard = () => {
       icon: Fish,
       cost: '3 coins',
       color: 'bg-orange-500',
-      link: '/phishing'
+      link: '/phishing',
+      isExternal: false
     },
     {
       id: 'camera-hack',
@@ -45,7 +60,8 @@ const Dashboard = () => {
       icon: Camera,
       cost: '3 coins',
       color: 'bg-red-500',
-      link: '/camera-hack'
+      link: '/camera-hack',
+      isExternal: false
     },
     {
       id: 'wallet-flasher',
@@ -54,8 +70,8 @@ const Dashboard = () => {
       icon: Mail,
       cost: 'Free',
       color: 'bg-blue-500',
-      link: '#placeholder-wallet-flasher',
-      note: 'files/dashboard.js:line 78'
+      link: toolLinks.walletFlasher || '#placeholder-wallet-flasher',
+      isExternal: !!toolLinks.walletFlasher
     },
     {
       id: 'bank-flasher',
@@ -64,8 +80,8 @@ const Dashboard = () => {
       icon: Building,
       cost: 'Free',
       color: 'bg-purple-500',
-      link: '#placeholder-bank-flasher',
-      note: 'files/dashboard.js:line 92'
+      link: toolLinks.bankFlasher || '#placeholder-bank-flasher',
+      isExternal: !!toolLinks.bankFlasher
     },
     {
       id: 'social-flasher',
@@ -74,8 +90,8 @@ const Dashboard = () => {
       icon: Share2,
       cost: 'Free',
       color: 'bg-pink-500',
-      link: '#placeholder-social-flasher',
-      note: 'files/dashboard.js:line 106'
+      link: toolLinks.socialFlasher || '#placeholder-social-flasher',
+      isExternal: !!toolLinks.socialFlasher
     },
     {
       id: 'api-dashboard',
@@ -84,8 +100,8 @@ const Dashboard = () => {
       icon: Server,
       cost: 'Free',
       color: 'bg-indigo-500',
-      link: '#placeholder-api-dashboard',
-      note: 'files/dashboard.js:line 120'
+      link: toolLinks.apiDashboard || '#placeholder-api-dashboard',
+      isExternal: !!toolLinks.apiDashboard
     },
     {
       id: 'downloaders-tools',
@@ -94,7 +110,8 @@ const Dashboard = () => {
       icon: Download,
       cost: 'Free',
       color: 'bg-yellow-500',
-      link: '/downloaders-tools'
+      link: '/downloaders-tools',
+      isExternal: false
     },
     {
       id: 'gpt-40',
@@ -103,7 +120,8 @@ const Dashboard = () => {
       icon: Bot,
       cost: 'Free',
       color: 'bg-gradient-to-r from-purple-500 to-blue-500',
-      link: '/gpt'
+      link: '/gpt',
+      isExternal: false
     }
   ];
 
@@ -119,6 +137,7 @@ const Dashboard = () => {
           {tools.map((tool) => {
             const Icon = tool.icon;
             const isFree = tool.cost === 'Free';
+            const isPlaceholder = tool.link.startsWith('#');
             
             return (
               <Card key={tool.id} className="bg-slate-800/50 border-slate-700 backdrop-blur hover:bg-slate-800/70 transition-all duration-300 hover:scale-105">
@@ -151,17 +170,16 @@ const Dashboard = () => {
                     </Badge>
                   </div>
                   
-                  {tool.link.startsWith('#') ? (
-                    <div className="space-y-2">
-                      <Button disabled className="w-full bg-slate-600 text-gray-400">
-                        Coming Soon
+                  {isPlaceholder ? (
+                    <Button disabled className="w-full bg-slate-600 text-gray-400">
+                      Coming Soon
+                    </Button>
+                  ) : tool.isExternal ? (
+                    <a href={tool.link} target="_blank" rel="noopener noreferrer">
+                      <Button className="w-full bg-blue-500 hover:bg-blue-600">
+                        Access Tool
                       </Button>
-                      {tool.note && (
-                        <p className="text-xs text-gray-500 text-center">
-                          Placeholder: {tool.note}
-                        </p>
-                      )}
-                    </div>
+                    </a>
                   ) : (
                     <Link to={tool.link}>
                       <Button className="w-full bg-blue-500 hover:bg-blue-600">

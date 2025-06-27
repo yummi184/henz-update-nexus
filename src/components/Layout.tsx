@@ -11,7 +11,9 @@ import {
   Copy,
   Settings,
   Banknote,
-  Wallet
+  Wallet,
+  MessageCircle,
+  Gift
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -28,7 +30,7 @@ const Layout = ({ children }: LayoutProps) => {
   const { toast } = useToast();
 
   const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-  const isAdmin = localStorage.getItem('isAdmin') === 'true';
+  const isAdmin = currentUser.email === 'EmmyHenz17@gmail.com';
 
   const handleLogout = () => {
     localStorage.removeItem('currentUser');
@@ -53,6 +55,8 @@ const Layout = ({ children }: LayoutProps) => {
     { path: '/inbox', label: 'Inbox', icon: Inbox },
     { path: '/banking-request', label: 'Banking', icon: Banknote },
     { path: '/crypto-request', label: 'Crypto', icon: Wallet },
+    { path: '/support', label: 'Support', icon: MessageCircle },
+    { path: '/redeem-code', label: 'Redeem Code', icon: Gift },
   ];
 
   if (isAdmin) {

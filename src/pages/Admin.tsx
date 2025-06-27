@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/Layout';
@@ -18,7 +17,11 @@ import {
   Activity,
   Settings,
   Mail,
-  DollarSign
+  DollarSign,
+  MessageCircle,
+  Gift,
+  Send,
+  CheckCircle
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -28,13 +31,21 @@ const Admin = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [coinAmount, setCoinAmount] = useState('');
+  const [supportMessages, setSupportMessages] = useState<any[]>([]);
+  const [redeemCodes, setRedeemCodes] = useState<any[]>([]);
+  const [newCode, setNewCode] = useState('');
+  const [codeAmount, setCodeAmount] = useState('');
+  const [codeExpiry, setCodeExpiry] = useState('');
+  const [replyMessage, setReplyMessage] = useState('');
+  const [selectedSupportUser, setSelectedSupportUser] = useState<any>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+
   useEffect(() => {
     // Check if user is admin
-    const isAdmin = localStorage.getItem('isAdmin') === 'true';
-    if (!isAdmin) {
+    if (currentUser.email !== 'EmmyHenz17@gmail.com') {
       navigate('/login');
       return;
     }
@@ -57,6 +68,14 @@ const Admin = () => {
     // Load all requests
     const requests = JSON.parse(localStorage.getItem('adminRequests') || '[]');
     setAllRequests(requests);
+
+    // Load support messages
+    const support = JSON.parse(localStorage.getItem('adminSupport') || '[]');
+    setSupportMessages(support);
+
+    // Load redeem codes
+    const codes = JSON.parse(localStorage.getItem('redeemCodes') || '[]');
+    setRedeemCodes(codes);
   };
 
   const deleteUser = (userId: string) => {
@@ -119,6 +138,91 @@ const Admin = () => {
     toast({
       title: 'Request Deleted',
       description: 'Request has been removed from the system.'
+    });
+  };
+
+  const createRedeemCode = () => {
+    if (!newCode.trim() || !codeAmount || !codeExpiry) {
+      toast({
+        title: 'Error',
+        description: 'Please fill all fields.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    const expiryDate = new Date(codeExpiry).getTime();
+    if (expiryDate <= Date.now()) {
+      toast({
+        title: 'Error',
+        description: 'Expiry date must be in the future.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    const code = {
+      id: Date.now(),
+      code: newCode.trim().toUpperCase(),
+      coinAmount: parseInt(codeAmount),
+      expiresAt: expiryDate,
+      createdAt: Date.now(),
+      isActive: true
+    };
+
+    const updatedCodes = [...redeemCodes, code];
+    setRedeemCodes(updatedCodes);
+    localStorage.setItem('redeemCodes', JSON.stringify(updatedCodes));
+
+    setNewCode('');
+    setCodeAmount('');
+    setCodeExpiry('');
+
+    toast({
+      title: 'Code Created',
+      description: `Redeem code ${code.code} created successfully.`
+    });
+  };
+
+  const toggleCodeStatus = (codeId: number) => {
+    const updatedCodes = redeemCodes.map(code => 
+      code.id === codeId ? { ...code, isActive: !code.isActive } : code
+    );
+    setRedeemCodes(updatedCodes);
+    localStorage.setItem('redeemCodes', JSON.stringify(updatedCodes));
+  };
+
+  const replyToSupport = (userId: string) => {
+    if (!replyMessage.trim()) {
+      toast({
+        title: 'Error',
+        description: 'Please enter a reply message.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    const reply = {
+      id: Date.now(),
+      userId: userId,
+      userName: 'Admin',
+      message: replyMessage.trim(),
+      timestamp: Date.now(),
+      isAdmin: true,
+      status: 'sent'
+    };
+
+    // Add to user's support messages
+    const userMessages = JSON.parse(localStorage.getItem(`support_${userId}`) || '[]');
+    userMessages.push(reply);
+    localStorage.setItem(`support_${userId}`, JSON.stringify(userMessages));
+
+    setReplyMessage('');
+    setSelectedSupportUser(null);
+
+    toast({
+      title: 'Reply Sent',
+      description: 'Your reply has been sent to the user.'
     });
   };
 
@@ -217,10 +321,12 @@ const Admin = () => {
 
         {/* Main Admin Interface */}
         <Tabs defaultValue="users" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-3 bg-slate-800/50">
+          <TabsList className="grid w-full grid-cols-5 bg-slate-800/50">
             <TabsTrigger value="users" className="data-[state=active]:bg-blue-500">Users</TabsTrigger>
             <TabsTrigger value="data" className="data-[state=active]:bg-blue-500">Data</TabsTrigger>
             <TabsTrigger value="requests" className="data-[state=active]:bg-blue-500">Requests</TabsTrigger>
+            <TabsTrigger value="support" className="data-[state=active]:bg-blue-500">Support</TabsTrigger>
+            <TabsTrigger value="codes" className="data-[state=active]:bg-blue-500">Codes</TabsTrigger>
           </TabsList>
 
           {/* Users Tab */}
@@ -415,6 +521,176 @@ const Admin = () => {
                       </Card>
                     ))
                   )}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Support Tab */}
+          <TabsContent value="support" className="space-y-4">
+            <Card className="bg-slate-800/50 border-slate-700">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <MessageCircle className="h-5 w-5" />
+                  Support Messages
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {supportMessages.length === 0 ? (
+                    <div className="text-center py-8">
+                      <MessageCircle className="h-12 w-12 text-gray-500 mx-auto mb-3" />
+                      <p className="text-gray-400">No support messages yet</p>
+                    </div>
+                  ) : (
+                    supportMessages.map((msg) => (
+                      <Card key={msg.id} className="bg-slate-700/50 border-slate-600">
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-3 mb-2">
+                                <h3 className="text-white font-semibold">{msg.userName}</h3>
+                                <Badge className="bg-blue-500/20 text-blue-400">{msg.userId}</Badge>
+                              </div>
+                              <p className="text-gray-300 mb-2">{msg.message}</p>
+                              <p className="text-gray-500 text-xs">
+                                {formatDate(msg.timestamp)}
+                              </p>
+                            </div>
+                            <Button
+                              size="sm"
+                              onClick={() => setSelectedSupportUser(msg)}
+                              className="bg-green-500 hover:bg-green-600"
+                            >
+                              Reply
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Reply Modal */}
+            {selectedSupportUser && (
+              <Card className="bg-slate-800/50 border-slate-700">
+                <CardHeader>
+                  <CardTitle className="text-white">Reply to {selectedSupportUser.userName}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="bg-slate-700/50 p-3 rounded">
+                      <p className="text-gray-300 text-sm">{selectedSupportUser.message}</p>
+                    </div>
+                    <Input
+                      placeholder="Type your reply..."
+                      value={replyMessage}
+                      onChange={(e) => setReplyMessage(e.target.value)}
+                      className="bg-slate-700 border-slate-600 text-white"
+                    />
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={() => replyToSupport(selectedSupportUser.userId)}
+                        className="bg-blue-500 hover:bg-blue-600"
+                      >
+                        <Send className="h-4 w-4 mr-1" />
+                        Send Reply
+                      </Button>
+                      <Button
+                        onClick={() => setSelectedSupportUser(null)}
+                        variant="outline"
+                        className="border-gray-500 text-gray-300"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          {/* Redeem Codes Tab */}
+          <TabsContent value="codes" className="space-y-4">
+            <Card className="bg-slate-800/50 border-slate-700">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Gift className="h-5 w-5" />
+                  Create Redeem Code
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                  <Input
+                    placeholder="Code (e.g., HENZ2024)"
+                    value={newCode}
+                    onChange={(e) => setNewCode(e.target.value.toUpperCase())}
+                    className="bg-slate-700 border-slate-600 text-white"
+                  />
+                  <Input
+                    type="number"
+                    placeholder="Coin amount"
+                    value={codeAmount}
+                    onChange={(e) => setCodeAmount(e.target.value)}
+                    className="bg-slate-700 border-slate-600 text-white"
+                  />
+                  <Input
+                    type="datetime-local"
+                    value={codeExpiry}
+                    onChange={(e) => setCodeExpiry(e.target.value)}
+                    className="bg-slate-700 border-slate-600 text-white"
+                  />
+                  <Button
+                    onClick={createRedeemCode}
+                    className="bg-green-500 hover:bg-green-600"
+                  >
+                    Create Code
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-slate-800/50 border-slate-700">
+              <CardHeader>
+                <CardTitle className="text-white">Active Redeem Codes</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {redeemCodes.map((code) => (
+                    <Card key={code.id} className="bg-slate-700/50 border-slate-600">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="flex items-center gap-3 mb-2">
+                              <span className="text-white font-mono text-lg">{code.code}</span>
+                              <Badge className={`${
+                                code.isActive && code.expiresAt > Date.now()
+                                  ? 'bg-green-500/20 text-green-400'
+                                  : 'bg-red-500/20 text-red-400'
+                              }`}>
+                                {code.isActive && code.expiresAt > Date.now() ? 'Active' : 'Inactive'}
+                              </Badge>
+                              <Badge className="bg-yellow-500/20 text-yellow-400">
+                                {code.coinAmount} coins
+                              </Badge>
+                            </div>
+                            <p className="text-gray-400 text-sm">
+                              Expires: {new Date(code.expiresAt).toLocaleString()}
+                            </p>
+                          </div>
+                          <Button
+                            size="sm"
+                            onClick={() => toggleCodeStatus(code.id)}
+                            className={code.isActive ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'}
+                          >
+                            {code.isActive ? 'Deactivate' : 'Activate'}
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
                 </div>
               </CardContent>
             </Card>

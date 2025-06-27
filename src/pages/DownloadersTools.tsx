@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Download, Link as LinkIcon, FileText, Music, Video, Image, Code } from 'lucide-react';
+import { Download, Link as LinkIcon, FileText, Music, Video, Image, Code, Copy } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const DownloadersTools = () => {
@@ -14,7 +14,9 @@ const DownloadersTools = () => {
   const [inputText, setInputText] = useState('');
   const [inputCode, setInputCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [result, setResult] = useState<any>(null);
+  const [downloadData, setDownloadData] = useState<any>(null);
+  const [fontResult, setFontResult] = useState('');
+  const [obfuscatedCode, setObfuscatedCode] = useState('');
   const { toast } = useToast();
 
   const socialDownloaders = [
@@ -31,16 +33,11 @@ const DownloadersTools = () => {
     { name: 'MediaFire', icon: '📁', endpoint: 'mediafire', param: 'url' }
   ];
 
-  const tools = [
-    { name: 'Text to Font', icon: '🔤', endpoint: 'font', param: 'text' },
-    { name: 'Code Obfuscator', icon: '🔒', endpoint: 'obf', param: 'code' }
-  ];
-
   const handleDownload = async (endpoint: string, param: string, value: string) => {
     if (!value.trim()) {
       toast({
         title: 'Error',
-        description: 'Please enter a valid URL or text',
+        description: 'Please enter a valid URL or search term',
         variant: 'destructive'
       });
       return;
@@ -52,7 +49,7 @@ const DownloadersTools = () => {
       const response = await fetch(apiUrl);
       const data = await response.json();
       
-      setResult(data);
+      setDownloadData(data);
       
       toast({
         title: 'Success',
@@ -70,13 +67,93 @@ const DownloadersTools = () => {
     }
   };
 
+  const handleFontConvert = async () => {
+    if (!inputText.trim()) {
+      toast({
+        title: 'Error',
+        description: 'Please enter text to convert',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await fetch(`https://auth-service-emmyhenz-api.hf.space/api/font?text=${encodeURIComponent(inputText)}`);
+      const data = await response.json();
+      
+      setFontResult(data.result || JSON.stringify(data));
+      toast({
+        title: 'Success',
+        description: 'Text converted successfully!'
+      });
+    } catch (error) {
+      console.error('Font conversion error:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to convert text. Please try again.',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleObfuscate = async () => {
+    if (!inputCode.trim()) {
+      toast({
+        title: 'Error',
+        description: 'Please enter code to obfuscate',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await fetch(`https://auth-service-emmyhenz-api.hf.space/api/obf?code=${encodeURIComponent(inputCode)}`);
+      const data = await response.json();
+      
+      setObfuscatedCode(data.result || data.obfuscated || JSON.stringify(data));
+      toast({
+        title: 'Success',
+        description: 'Code obfuscated successfully!'
+      });
+    } catch (error) {
+      console.error('Obfuscation error:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to obfuscate code. Please try again.',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const downloadFile = (url: string, filename: string) => {
     const link = document.createElement('a');
     link.href = url;
     link.download = filename;
+    link.target = '_blank';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast({
+      title: 'Copied!',
+      description: 'Text copied to clipboard'
+    });
+  };
+
+  const downloadObfuscatedCode = () => {
+    const blob = new Blob([obfuscatedCode], { type: 'application/javascript' });
+    const url = URL.createObjectURL(blob);
+    downloadFile(url, 'henzobsfucator.js');
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -140,7 +217,7 @@ const DownloadersTools = () => {
                             disabled={isLoading}
                             className="w-full bg-blue-500 hover:bg-blue-600"
                           >
-                            {isLoading ? 'Processing...' : 'Download'}
+                            {isLoading ? 'Processing...' : 'Process'}
                           </Button>
                         </div>
                       </CardContent>
@@ -181,7 +258,7 @@ const DownloadersTools = () => {
                             disabled={isLoading}
                             className="w-full bg-blue-500 hover:bg-blue-600"
                           >
-                            {isLoading ? 'Processing...' : 'Download'}
+                            {isLoading ? 'Processing...' : 'Process'}
                           </Button>
                         </div>
                       </CardContent>
@@ -219,7 +296,7 @@ const DownloadersTools = () => {
                           className="bg-slate-600 border-slate-500 text-white"
                         />
                         <Button
-                          onClick={() => handleDownload('font', 'text', inputText)}
+                          onClick={handleFontConvert}
                           disabled={isLoading}
                           className="w-full bg-green-500 hover:bg-green-600"
                         >
@@ -243,7 +320,7 @@ const DownloadersTools = () => {
                           className="w-full h-20 px-3 py-2 bg-slate-600 border border-slate-500 rounded text-white resize-none"
                         />
                         <Button
-                          onClick={() => handleDownload('obf', 'code', inputCode)}
+                          onClick={handleObfuscate}
                           disabled={isLoading}
                           className="w-full bg-orange-500 hover:bg-orange-600"
                         >
@@ -258,25 +335,90 @@ const DownloadersTools = () => {
           </div>
         )}
 
-        {/* Results */}
-        {result && (
+        {/* Download Results */}
+        {downloadData && (
           <Card className="bg-slate-800/50 border-slate-700">
             <CardHeader>
-              <CardTitle className="text-white">Results</CardTitle>
+              <CardTitle className="text-white">Download Ready</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="bg-slate-700/50 p-4 rounded-lg">
-                <pre className="text-white text-sm overflow-x-auto">
-                  {JSON.stringify(result, null, 2)}
-                </pre>
-                {result.downloadUrl && (
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-white">Your content is ready!</span>
+                  {downloadData.downloadUrl && (
+                    <Button
+                      onClick={() => downloadFile(downloadData.downloadUrl, downloadData.filename || 'download')}
+                      className="bg-green-500 hover:bg-green-600"
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Download
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Font Results */}
+        {fontResult && (
+          <Card className="bg-slate-800/50 border-slate-700">
+            <CardHeader>
+              <CardTitle className="text-white">Font Results</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="bg-slate-700/50 p-4 rounded-lg">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-white font-semibold">Converted Text:</span>
                   <Button
-                    onClick={() => downloadFile(result.downloadUrl, 'download')}
-                    className="mt-4 bg-green-500 hover:bg-green-600"
+                    onClick={() => copyToClipboard(fontResult)}
+                    size="sm"
+                    className="bg-blue-500 hover:bg-blue-600"
                   >
-                    Download File
+                    <Copy className="h-4 w-4 mr-1" />
+                    Copy
                   </Button>
-                )}
+                </div>
+                <div className="bg-slate-600 p-3 rounded text-white font-mono text-sm break-all">
+                  {fontResult}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Obfuscated Code Results */}
+        {obfuscatedCode && (
+          <Card className="bg-slate-800/50 border-slate-700">
+            <CardHeader>
+              <CardTitle className="text-white">Obfuscated Code</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="bg-slate-700/50 p-4 rounded-lg">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-white font-semibold">Console Output:</span>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => copyToClipboard(obfuscatedCode)}
+                      size="sm"
+                      className="bg-blue-500 hover:bg-blue-600"
+                    >
+                      <Copy className="h-4 w-4 mr-1" />
+                      Copy
+                    </Button>
+                    <Button
+                      onClick={downloadObfuscatedCode}
+                      size="sm"
+                      className="bg-green-500 hover:bg-green-600"
+                    >
+                      <Download className="h-4 w-4 mr-1" />
+                      Download
+                    </Button>
+                  </div>
+                </div>
+                <div className="bg-black p-4 rounded text-green-400 font-mono text-sm overflow-x-auto max-h-64 overflow-y-auto">
+                  <pre className="whitespace-pre-wrap break-words">{obfuscatedCode}</pre>
+                </div>
               </div>
             </CardContent>
           </Card>

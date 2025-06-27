@@ -12,8 +12,9 @@ import {
   Building, 
   Share2, 
   Server, 
-  Video,
-  Coins
+  Download,
+  Coins,
+  Bot
 } from 'lucide-react';
 
 const Dashboard = () => {
@@ -87,13 +88,22 @@ const Dashboard = () => {
       note: 'files/dashboard.js:line 120'
     },
     {
-      id: 'video-simulation',
-      title: 'Live Video Simulation',
-      description: 'Upload image and video for live simulation',
-      icon: Video,
-      cost: '5 coins',
+      id: 'downloaders-tools',
+      title: 'Downloaders/Tools',
+      description: 'Download content from social media and various tools',
+      icon: Download,
+      cost: 'Free',
       color: 'bg-yellow-500',
-      link: '/video-simulation'
+      link: '/downloaders-tools'
+    },
+    {
+      id: 'gpt-40',
+      title: 'GPT 4.0',
+      description: 'Advanced AI chat assistant',
+      icon: Bot,
+      cost: 'Free',
+      color: 'bg-gradient-to-r from-purple-500 to-blue-500',
+      link: '/gpt'
     }
   ];
 

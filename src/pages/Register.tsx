@@ -39,6 +39,31 @@ const Register = () => {
 
     setIsLoading(true);
     
+    // Check if email already exists
+    const allUsers = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('user_')) {
+        try {
+          const userData = JSON.parse(localStorage.getItem(key) || '{}');
+          allUsers.push(userData);
+        } catch (error) {
+          console.log('Error parsing user data:', error);
+        }
+      }
+    }
+
+    const existingUser = allUsers.find(u => u.email === formData.email);
+    if (existingUser) {
+      toast({
+        title: 'Error',
+        description: 'An account with this email already exists',
+        variant: 'destructive'
+      });
+      setIsLoading(false);
+      return;
+    }
+    
     // Simulate registration
     setTimeout(() => {
       const userId = generateUserId();
@@ -46,6 +71,7 @@ const Register = () => {
         id: userId,
         name: formData.name,
         email: formData.email,
+        password: formData.password, // Store password for validation
         coins: 0,
         status: 'Active',
         joinDate: new Date().toISOString(),

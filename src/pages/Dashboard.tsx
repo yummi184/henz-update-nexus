@@ -15,7 +15,8 @@ import {
   Server, 
   Download,
   Coins,
-  Bot
+  Bot,
+  Code
 } from 'lucide-react';
 
 const Dashboard = () => {
@@ -24,7 +25,8 @@ const Dashboard = () => {
     walletFlasher: '',
     bankFlasher: '',
     socialFlasher: '',
-    apiDashboard: ''
+    apiDashboard: '',
+    downloader: ''
   });
 
   useEffect(() => {
@@ -104,10 +106,20 @@ const Dashboard = () => {
       isExternal: !!toolLinks.apiDashboard
     },
     {
-      id: 'downloaders-tools',
-      title: 'Downloaders/Tools',
-      description: 'Download content from social media and various tools',
+      id: 'downloader',
+      title: 'Downloader',
+      description: 'Download content from various platforms',
       icon: Download,
+      cost: 'Free',
+      color: 'bg-cyan-500',
+      link: toolLinks.downloader || '#placeholder-downloader',
+      isExternal: !!toolLinks.downloader
+    },
+    {
+      id: 'tools',
+      title: 'Tools',
+      description: 'Various utility tools',
+      icon: Code,
       cost: 'Free',
       color: 'bg-yellow-500',
       link: '/downloaders-tools',
@@ -203,7 +215,7 @@ const Dashboard = () => {
                 </div>
                 <div>
                   <p className="text-gray-400 text-sm">Available Tools</p>
-                  <p className="text-white text-lg font-semibold">8 Tools</p>
+                  <p className="text-white text-lg font-semibold">10 Tools</p>
                 </div>
               </div>
             </CardContent>
@@ -217,7 +229,7 @@ const Dashboard = () => {
                 </div>
                 <div>
                   <p className="text-gray-400 text-sm">Free Tools</p>
-                  <p className="text-white text-lg font-semibold">5 Free</p>
+                  <p className="text-white text-lg font-semibold">8 Free</p>
                 </div>
               </div>
             </CardContent>
@@ -231,7 +243,7 @@ const Dashboard = () => {
                 </div>
                 <div>
                   <p className="text-gray-400 text-sm">Premium Tools</p>
-                  <p className="text-white text-lg font-semibold">3 Premium</p>
+                  <p className="text-white text-lg font-semibold">2 Premium</p>
                 </div>
               </div>
             </CardContent>

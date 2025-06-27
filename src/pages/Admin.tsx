@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, MessageCircle, Send, CheckCircle, Settings, Link as LinkIcon } from 'lucide-react';
+import { Users, MessageCircle, Send, CheckCircle, Settings, Link as LinkIcon, Gift, Coins, Trash2, Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const Admin = () => {
@@ -19,21 +19,30 @@ const Admin = () => {
     walletFlasher: '',
     bankFlasher: '',
     socialFlasher: '',
-    apiDashboard: ''
+    apiDashboard: '',
+    downloader: ''
   });
   const [tempLinks, setTempLinks] = useState({
     freeHacks: '',
     walletFlasher: '',
     bankFlasher: '',
     socialFlasher: '',
-    apiDashboard: ''
+    apiDashboard: '',
+    downloader: ''
   });
+  const [redeemCodes, setRedeemCodes] = useState<any[]>([]);
+  const [newCode, setNewCode] = useState('');
+  const [newCodeCoins, setNewCodeCoins] = useState('');
+  const [newCodeExpiry, setNewCodeExpiry] = useState('');
+  const [fundUserId, setFundUserId] = useState('');
+  const [fundAmount, setFundAmount] = useState('');
   const { toast } = useToast();
 
   useEffect(() => {
     loadUsers();
     loadSupportMessages();
     loadToolLinks();
+    loadRedeemCodes();
   }, []);
 
   const loadUsers = () => {
@@ -60,15 +69,22 @@ const Admin = () => {
       walletFlasher: links.walletFlasher || '',
       bankFlasher: links.bankFlasher || '',
       socialFlasher: links.socialFlasher || '',
-      apiDashboard: links.apiDashboard || ''
+      apiDashboard: links.apiDashboard || '',
+      downloader: links.downloader || ''
     });
     setTempLinks({
       freeHacks: links.freeHacks || '',
       walletFlasher: links.walletFlasher || '',
       bankFlasher: links.bankFlasher || '',
       socialFlasher: links.socialFlasher || '',
-      apiDashboard: links.apiDashboard || ''
+      apiDashboard: links.apiDashboard || '',
+      downloader: links.downloader || ''
     });
+  };
+
+  const loadRedeemCodes = () => {
+    const codes = JSON.parse(localStorage.getItem('redeemCodes') || '[]');
+    setRedeemCodes(codes);
   };
 
   const sendReply = (userId: string) => {
@@ -110,6 +126,109 @@ const Admin = () => {
     setTempLinks(prev => ({ ...prev, [tool]: '' }));
   };
 
+  const addRedeemCode = () => {
+    if (!newCode.trim() || !newCodeCoins || !newCodeExpiry) {
+      toast({
+        title: 'Error',
+        description: 'Please fill all fields to create redeem code.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    const expiryHours = parseInt(newCodeExpiry);
+    const expiryTime = Date.now() + (expiryHours * 60 * 60 * 1000);
+
+    const codeData = {
+      id: Date.now(),
+      code: newCode.trim().toUpperCase(),
+      coinAmount: parseInt(newCodeCoins),
+      expiresAt: expiryTime,
+      createdAt: Date.now(),
+      isActive: true
+    };
+
+    const updatedCodes = [...redeemCodes, codeData];
+    setRedeemCodes(updatedCodes);
+    localStorage.setItem('redeemCodes', JSON.stringify(updatedCodes));
+
+    setNewCode('');
+    setNewCodeCoins('');
+    setNewCodeExpiry('');
+    toast({
+      title: 'Redeem Code Created',
+      description: `Code "${codeData.code}" created successfully!`
+    });
+  };
+
+  const deleteRedeemCode = (codeId: number) => {
+    const updatedCodes = redeemCodes.filter(code => code.id !== codeId);
+    setRedeemCodes(updatedCodes);
+    localStorage.setItem('redeemCodes', JSON.stringify(updatedCodes));
+    toast({
+      title: 'Code Deleted',
+      description: 'Redeem code has been deleted.'
+    });
+  };
+
+  const fundUser = () => {
+    if (!fundUserId.trim() || !fundAmount) {
+      toast({
+        title: 'Error',
+        description: 'Please enter both User ID and amount.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    const userData = localStorage.getItem(`user_${fundUserId.trim()}`);
+    if (!userData) {
+      toast({
+        title: 'Error',
+        description: 'User not found.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    const user = JSON.parse(userData);
+    const amount = parseInt(fundAmount);
+    user.coins = (user.coins || 0) + amount;
+    user.transactions = user.transactions || [];
+    user.transactions.push({
+      description: `Admin funding: +${amount} coins`,
+      amount: amount,
+      timestamp: Date.now()
+    });
+
+    localStorage.setItem(`user_${fundUserId.trim()}`, JSON.stringify(user));
+    
+    // Update current user if it's the same
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    if (currentUser.id === fundUserId.trim()) {
+      localStorage.setItem('currentUser', JSON.stringify(user));
+    }
+
+    setFundUserId('');
+    setFundAmount('');
+    loadUsers();
+    toast({
+      title: 'User Funded',
+      description: `Added ${amount} coins to user ${fundUserId.trim()}`
+    });
+  };
+
+  const deleteUser = (userId: string) => {
+    localStorage.removeItem(`user_${userId}`);
+    localStorage.removeItem(`support_${userId}`);
+    localStorage.removeItem(`redeemed_${userId}`);
+    loadUsers();
+    toast({
+      title: 'User Deleted',
+      description: 'User account has been deleted.'
+    });
+  };
+
   const formatTime = (timestamp: number) => {
     const date = new Date(timestamp);
     return date.toLocaleString();
@@ -120,7 +239,8 @@ const Admin = () => {
     walletFlasher: 'Wallet Mail Flasher',
     bankFlasher: 'Bank Mail Flasher',
     socialFlasher: 'Social Media Flasher',
-    apiDashboard: 'API Dashboard'
+    apiDashboard: 'API Dashboard',
+    downloader: 'Downloader'
   };
 
   return (
@@ -132,10 +252,12 @@ const Admin = () => {
         </div>
 
         <Tabs defaultValue="users" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 bg-slate-800">
+          <TabsList className="grid w-full grid-cols-6 bg-slate-800">
             <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="support">Support</TabsTrigger>
             <TabsTrigger value="links">Tool Links</TabsTrigger>
+            <TabsTrigger value="redeem">Redeem Codes</TabsTrigger>
+            <TabsTrigger value="funding">User Funding</TabsTrigger>
             <TabsTrigger value="system">System</TabsTrigger>
           </TabsList>
 
@@ -157,13 +279,17 @@ const Admin = () => {
                           <p className="text-gray-400 text-sm">{user.email}</p>
                           <p className="text-gray-400 text-sm">Coins: {user.coins || 0}</p>
                         </div>
-                        <div className="text-right">
+                        <div className="flex items-center gap-2">
                           <Badge className="bg-green-500/20 text-green-400">
                             {user.role || 'User'}
                           </Badge>
-                          <p className="text-gray-400 text-xs mt-1">
-                            ID: {user.id}
-                          </p>
+                          <Button
+                            onClick={() => deleteUser(user.id)}
+                            size="sm"
+                            className="bg-red-500 hover:bg-red-600"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
                       </div>
                     </div>
@@ -278,6 +404,126 @@ const Admin = () => {
             </Card>
           </TabsContent>
 
+          <TabsContent value="redeem">
+            <Card className="bg-slate-800/50 border-slate-700">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Gift className="h-5 w-5" />
+                  Redeem Codes Management
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  <div className="bg-slate-700/50 p-4 rounded-lg">
+                    <h3 className="text-white font-semibold mb-4">Create New Redeem Code</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <Input
+                        placeholder="Code (e.g., HENZ2024)"
+                        value={newCode}
+                        onChange={(e) => setNewCode(e.target.value.toUpperCase())}
+                        className="bg-slate-600 border-slate-500 text-white"
+                      />
+                      <Input
+                        placeholder="Coin Amount"
+                        type="number"
+                        value={newCodeCoins}
+                        onChange={(e) => setNewCodeCoins(e.target.value)}
+                        className="bg-slate-600 border-slate-500 text-white"
+                      />
+                      <Input
+                        placeholder="Expiry (hours)"
+                        type="number"
+                        value={newCodeExpiry}
+                        onChange={(e) => setNewCodeExpiry(e.target.value)}
+                        className="bg-slate-600 border-slate-500 text-white"
+                      />
+                    </div>
+                    <Button
+                      onClick={addRedeemCode}
+                      className="w-full mt-4 bg-green-500 hover:bg-green-600"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create Redeem Code
+                    </Button>
+                  </div>
+
+                  <div className="space-y-4">
+                    <h3 className="text-white font-semibold">Active Redeem Codes</h3>
+                    {redeemCodes.map((code) => (
+                      <div key={code.id} className="bg-slate-700/50 p-4 rounded-lg">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h4 className="text-white font-semibold">{code.code}</h4>
+                            <p className="text-gray-400 text-sm">Coins: {code.coinAmount}</p>
+                            <p className="text-gray-400 text-sm">
+                              Expires: {formatTime(code.expiresAt)}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge className={
+                              code.expiresAt > Date.now() 
+                                ? "bg-green-500/20 text-green-400"
+                                : "bg-red-500/20 text-red-400"
+                            }>
+                              {code.expiresAt > Date.now() ? 'Active' : 'Expired'}
+                            </Badge>
+                            <Button
+                              onClick={() => deleteRedeemCode(code.id)}
+                              size="sm"
+                              className="bg-red-500 hover:bg-red-600"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="funding">
+            <Card className="bg-slate-800/50 border-slate-700">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Coins className="h-5 w-5" />
+                  User Funding
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="bg-slate-700/50 p-4 rounded-lg">
+                    <h3 className="text-white font-semibold mb-4">Fund User Account</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <Input
+                        placeholder="User ID"
+                        value={fundUserId}
+                        onChange={(e) => setFundUserId(e.target.value)}
+                        className="bg-slate-600 border-slate-500 text-white"
+                      />
+                      <Input
+                        placeholder="Coin Amount"
+                        type="number"
+                        value={fundAmount}
+                        onChange={(e) => setFundAmount(e.target.value)}
+                        className="bg-slate-600 border-slate-500 text-white"
+                      />
+                    </div>
+                    <Button
+                      onClick={fundUser}
+                      className="w-full mt-4 bg-blue-500 hover:bg-blue-600"
+                    >
+                      <Coins className="h-4 w-4 mr-2" />
+                      Fund User
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
           <TabsContent value="system">
             <Card className="bg-slate-800/50 border-slate-700">
               <CardHeader>
@@ -298,6 +544,7 @@ const Admin = () => {
                     <h3 className="text-white font-semibold mb-2">System Stats</h3>
                     <p className="text-gray-300">Total Users: {users.length}</p>
                     <p className="text-gray-300">Support Messages: {supportMessages.length}</p>
+                    <p className="text-gray-300">Active Redeem Codes: {redeemCodes.filter(c => c.expiresAt > Date.now()).length}</p>
                   </div>
                 </div>
               </CardContent>

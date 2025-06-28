@@ -6,9 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, MessageCircle, Send, CheckCircle, Settings, Link as LinkIcon, Gift, Coins, Trash2, Plus, Calendar } from 'lucide-react';
+import { Users, MessageCircle, Send, CheckCircle, Settings, Link as LinkIcon, Gift, Coins, Trash2, Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { jsonStorage } from '@/utils/jsonStorage';
 
 const Admin = () => {
   const [users, setUsers] = useState<any[]>([]);
@@ -47,18 +46,24 @@ const Admin = () => {
   }, []);
 
   const loadUsers = () => {
-    const allUsers = jsonStorage.getAllUsers();
-    console.log('Loaded users:', allUsers);
+    const allUsers = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('user_')) {
+        const userData = JSON.parse(localStorage.getItem(key) || '{}');
+        allUsers.push(userData);
+      }
+    }
     setUsers(allUsers);
   };
 
   const loadSupportMessages = () => {
-    const messages = JSON.parse(jsonStorage.getItem('adminSupport') || '[]');
+    const messages = JSON.parse(localStorage.getItem('adminSupport') || '[]');
     setSupportMessages(messages);
   };
 
   const loadToolLinks = () => {
-    const links = JSON.parse(jsonStorage.getItem('toolLinks') || '{}');
+    const links = JSON.parse(localStorage.getItem('toolLinks') || '{}');
     setToolLinks({
       freeHacks: links.freeHacks || '',
       walletFlasher: links.walletFlasher || '',
@@ -78,7 +83,7 @@ const Admin = () => {
   };
 
   const loadRedeemCodes = () => {
-    const codes = JSON.parse(jsonStorage.getItem('redeemCodes') || '[]');
+    const codes = JSON.parse(localStorage.getItem('redeemCodes') || '[]');
     setRedeemCodes(codes);
   };
 
@@ -96,9 +101,9 @@ const Admin = () => {
     };
 
     // Add to user's support messages
-    const userMessages = JSON.parse(jsonStorage.getItem(`support_${userId}`) || '[]');
+    const userMessages = JSON.parse(localStorage.getItem(`support_${userId}`) || '[]');
     userMessages.push(adminReply);
-    jsonStorage.setItem(`support_${userId}`, JSON.stringify(userMessages));
+    localStorage.setItem(`support_${userId}`, JSON.stringify(userMessages));
 
     setReplyMessage('');
     setSelectedUserId(null);
@@ -109,7 +114,7 @@ const Admin = () => {
   };
 
   const saveToolLinks = () => {
-    jsonStorage.setItem('toolLinks', JSON.stringify(tempLinks));
+    localStorage.setItem('toolLinks', JSON.stringify(tempLinks));
     setToolLinks(tempLinks);
     toast({
       title: 'Links Updated',
@@ -131,17 +136,8 @@ const Admin = () => {
       return;
     }
 
-    const expiryDate = new Date(newCodeExpiry);
-    const expiryTime = expiryDate.getTime();
-
-    if (expiryTime <= Date.now()) {
-      toast({
-        title: 'Error',
-        description: 'Expiry date must be in the future.',
-        variant: 'destructive'
-      });
-      return;
-    }
+    const expiryHours = parseInt(newCodeExpiry);
+    const expiryTime = Date.now() + (expiryHours * 60 * 60 * 1000);
 
     const codeData = {
       id: Date.now(),
@@ -154,7 +150,7 @@ const Admin = () => {
 
     const updatedCodes = [...redeemCodes, codeData];
     setRedeemCodes(updatedCodes);
-    jsonStorage.setItem('redeemCodes', JSON.stringify(updatedCodes));
+    localStorage.setItem('redeemCodes', JSON.stringify(updatedCodes));
 
     setNewCode('');
     setNewCodeCoins('');
@@ -168,7 +164,7 @@ const Admin = () => {
   const deleteRedeemCode = (codeId: number) => {
     const updatedCodes = redeemCodes.filter(code => code.id !== codeId);
     setRedeemCodes(updatedCodes);
-    jsonStorage.setItem('redeemCodes', JSON.stringify(updatedCodes));
+    localStorage.setItem('redeemCodes', JSON.stringify(updatedCodes));
     toast({
       title: 'Code Deleted',
       description: 'Redeem code has been deleted.'
@@ -185,7 +181,7 @@ const Admin = () => {
       return;
     }
 
-    const userData = jsonStorage.getItem(`user_${fundUserId.trim()}`);
+    const userData = localStorage.getItem(`user_${fundUserId.trim()}`);
     if (!userData) {
       toast({
         title: 'Error',
@@ -205,12 +201,12 @@ const Admin = () => {
       timestamp: Date.now()
     });
 
-    jsonStorage.setItem(`user_${fundUserId.trim()}`, JSON.stringify(user));
+    localStorage.setItem(`user_${fundUserId.trim()}`, JSON.stringify(user));
     
     // Update current user if it's the same
-    const currentUser = JSON.parse(jsonStorage.getItem('currentUser') || '{}');
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
     if (currentUser.id === fundUserId.trim()) {
-      jsonStorage.setItem('currentUser', JSON.stringify(user));
+      localStorage.setItem('currentUser', JSON.stringify(user));
     }
 
     setFundUserId('');
@@ -223,9 +219,9 @@ const Admin = () => {
   };
 
   const deleteUser = (userId: string) => {
-    jsonStorage.removeItem(`user_${userId}`);
-    jsonStorage.removeItem(`support_${userId}`);
-    jsonStorage.removeItem(`redeemed_${userId}`);
+    localStorage.removeItem(`user_${userId}`);
+    localStorage.removeItem(`support_${userId}`);
+    localStorage.removeItem(`redeemed_${userId}`);
     loadUsers();
     toast({
       title: 'User Deleted',
@@ -281,7 +277,6 @@ const Admin = () => {
                         <div>
                           <h3 className="text-white font-semibold">{user.name}</h3>
                           <p className="text-gray-400 text-sm">{user.email}</p>
-                          <p className="text-gray-400 text-sm">ID: {user.id}</p>
                           <p className="text-gray-400 text-sm">Coins: {user.coins || 0}</p>
                         </div>
                         <div className="flex items-center gap-2">
@@ -435,16 +430,13 @@ const Admin = () => {
                         onChange={(e) => setNewCodeCoins(e.target.value)}
                         className="bg-slate-600 border-slate-500 text-white"
                       />
-                      <div className="relative">
-                        <Calendar className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                        <Input
-                          placeholder="Expiry Date & Time"
-                          type="datetime-local"
-                          value={newCodeExpiry}
-                          onChange={(e) => setNewCodeExpiry(e.target.value)}
-                          className="pl-10 bg-slate-600 border-slate-500 text-white"
-                        />
-                      </div>
+                      <Input
+                        placeholder="Expiry (hours)"
+                        type="number"
+                        value={newCodeExpiry}
+                        onChange={(e) => setNewCodeExpiry(e.target.value)}
+                        className="bg-slate-600 border-slate-500 text-white"
+                      />
                     </div>
                     <Button
                       onClick={addRedeemCode}

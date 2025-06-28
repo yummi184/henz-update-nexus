@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, User, Mail, Lock, Eye, EyeOff } from 'lucide-react';
@@ -7,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import { jsonStorage } from '@/utils/jsonStorage';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -40,20 +40,9 @@ const Register = () => {
     setIsLoading(true);
     
     // Check if email already exists
-    const allUsers = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && key.startsWith('user_')) {
-        try {
-          const userData = JSON.parse(localStorage.getItem(key) || '{}');
-          allUsers.push(userData);
-        } catch (error) {
-          console.log('Error parsing user data:', error);
-        }
-      }
-    }
-
+    const allUsers = jsonStorage.getAllUsers();
     const existingUser = allUsers.find(u => u.email === formData.email);
+    
     if (existingUser) {
       toast({
         title: 'Error',
@@ -75,11 +64,14 @@ const Register = () => {
         coins: 0,
         status: 'Active',
         joinDate: new Date().toISOString(),
-        transactions: []
+        transactions: [],
+        redeemedCodes: []
       };
       
-      localStorage.setItem('currentUser', JSON.stringify(userData));
-      localStorage.setItem(`user_${userId}`, JSON.stringify(userData));
+      jsonStorage.setItem('currentUser', JSON.stringify(userData));
+      jsonStorage.setItem(`user_${userId}`, JSON.stringify(userData));
+      
+      console.log('User registered:', userData);
       
       toast({
         title: 'Registration Successful',

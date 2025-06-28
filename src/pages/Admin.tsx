@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import Layout from '@/components/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -5,12 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Users, MessageCircle, Send, CheckCircle, Settings, Link as LinkIcon, Gift, Coins, Trash2, Plus, CalendarIcon } from 'lucide-react';
+import { Users, MessageCircle, Send, CheckCircle, Settings, Link as LinkIcon, Gift, Coins, Trash2, Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
 
 const Admin = () => {
   const [users, setUsers] = useState<any[]>([]);
@@ -36,8 +33,7 @@ const Admin = () => {
   const [redeemCodes, setRedeemCodes] = useState<any[]>([]);
   const [newCode, setNewCode] = useState('');
   const [newCodeCoins, setNewCodeCoins] = useState('');
-  const [newCodeExpiry, setNewCodeExpiry] = useState<Date>();
-  const [newCodeExpiryTime, setNewCodeExpiryTime] = useState('23:59');
+  const [newCodeExpiry, setNewCodeExpiry] = useState('');
   const [fundUserId, setFundUserId] = useState('');
   const [fundAmount, setFundAmount] = useState('');
   const { toast } = useToast();
@@ -140,15 +136,14 @@ const Admin = () => {
       return;
     }
 
-    const [hours, minutes] = newCodeExpiryTime.split(':');
-    const expiryDate = new Date(newCodeExpiry);
-    expiryDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+    const expiryHours = parseInt(newCodeExpiry);
+    const expiryTime = Date.now() + (expiryHours * 60 * 60 * 1000);
 
     const codeData = {
       id: Date.now(),
       code: newCode.trim().toUpperCase(),
       coinAmount: parseInt(newCodeCoins),
-      expiresAt: expiryDate.getTime(),
+      expiresAt: expiryTime,
       createdAt: Date.now(),
       isActive: true
     };
@@ -159,8 +154,7 @@ const Admin = () => {
 
     setNewCode('');
     setNewCodeCoins('');
-    setNewCodeExpiry(undefined);
-    setNewCodeExpiryTime('23:59');
+    setNewCodeExpiry('');
     toast({
       title: 'Redeem Code Created',
       description: `Code "${codeData.code}" created successfully!`
@@ -422,7 +416,7 @@ const Admin = () => {
                 <div className="space-y-6">
                   <div className="bg-slate-700/50 p-4 rounded-lg">
                     <h3 className="text-white font-semibold mb-4">Create New Redeem Code</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <Input
                         placeholder="Code (e.g., HENZ2024)"
                         value={newCode}
@@ -436,51 +430,17 @@ const Admin = () => {
                         onChange={(e) => setNewCodeCoins(e.target.value)}
                         className="bg-slate-600 border-slate-500 text-white"
                       />
+                      <Input
+                        placeholder="Expiry (hours)"
+                        type="number"
+                        value={newCodeExpiry}
+                        onChange={(e) => setNewCodeExpiry(e.target.value)}
+                        className="bg-slate-600 border-slate-500 text-white"
+                      />
                     </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                      <div className="space-y-2">
-                        <label className="text-white text-sm">Expiry Date</label>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <Button
-                              variant="outline"
-                              className={cn(
-                                "w-full justify-start text-left font-normal bg-slate-600 border-slate-500 text-white",
-                                !newCodeExpiry && "text-muted-foreground"
-                              )}
-                            >
-                              <CalendarIcon className="mr-2 h-4 w-4" />
-                              {newCodeExpiry ? format(newCodeExpiry, "PPP") : <span>Pick expiry date</span>}
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar
-                              mode="single"
-                              selected={newCodeExpiry}
-                              onSelect={setNewCodeExpiry}
-                              disabled={(date) => date < new Date()}
-                              initialFocus
-                              className={cn("p-3 pointer-events-auto")}
-                            />
-                          </PopoverContent>
-                        </Popover>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <label className="text-white text-sm">Expiry Time</label>
-                        <Input
-                          type="time"
-                          value={newCodeExpiryTime}
-                          onChange={(e) => setNewCodeExpiryTime(e.target.value)}
-                          className="bg-slate-600 border-slate-500 text-white"
-                        />
-                      </div>
-                    </div>
-                    
                     <Button
                       onClick={addRedeemCode}
-                      className="w-full bg-green-500 hover:bg-green-600"
+                      className="w-full mt-4 bg-green-500 hover:bg-green-600"
                     >
                       <Plus className="h-4 w-4 mr-2" />
                       Create Redeem Code

@@ -16,8 +16,12 @@ import {
   Download,
   Coins,
   Bot,
-  Code
+  Code,
+  RefreshCw
 } from 'lucide-react';
+import { jsonStorage } from '@/utils/jsonStorage';
+import { useClickSound } from '@/hooks/useClickSound';
+import { useToast } from '@/hooks/use-toast';
 
 const Dashboard = () => {
   const [toolLinks, setToolLinks] = useState({
@@ -29,10 +33,22 @@ const Dashboard = () => {
     downloader: ''
   });
 
+  const { playClickSound } = useClickSound();
+  const { toast } = useToast();
+
   useEffect(() => {
-    const links = JSON.parse(localStorage.getItem('toolLinks') || '{}');
+    const links = JSON.parse(jsonStorage.getItem('toolLinks') || '{}');
     setToolLinks(links);
   }, []);
+
+  const handleRefresh = () => {
+    playClickSound();
+    window.location.reload();
+    toast({
+      title: 'Refreshed!',
+      description: 'Page has been refreshed for updates'
+    });
+  };
 
   const tools = [
     {
@@ -140,9 +156,19 @@ const Dashboard = () => {
   return (
     <Layout>
       <div className="space-y-6">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-white mb-2">Dashboard</h1>
-          <p className="text-gray-400">Choose your research and educational tools</p>
+        <div className="text-center flex items-center justify-between">
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold text-white mb-2">Dashboard</h1>
+            <p className="text-gray-400">Choose your research and educational tools</p>
+          </div>
+          <Button
+            onClick={handleRefresh}
+            variant="outline"
+            className="bg-transparent border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-white"
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

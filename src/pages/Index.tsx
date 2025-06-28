@@ -1,12 +1,19 @@
 
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Shield, Users, Zap, BookOpen } from 'lucide-react';
+import { Shield, Users, Zap, BookOpen, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useClickSound } from '@/hooks/useClickSound';
 
 const Index = () => {
   const [showDisclaimer, setShowDisclaimer] = useState(true);
+  const { playClickSound } = useClickSound();
+
+  const handleJoinChannel = () => {
+    playClickSound();
+    window.open('https://t.me/+DFTqvLsv_zc4NDY0', '_blank');
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
@@ -18,7 +25,10 @@ const Index = () => {
             <span className="font-semibold text-xs sm:text-sm">FOR EDUCATIONAL AND RESEARCH PURPOSES ONLY</span>
           </div>
           <button
-            onClick={() => setShowDisclaimer(false)}
+            onClick={() => {
+              playClickSound();
+              setShowDisclaimer(false);
+            }}
             className="absolute right-2 sm:right-4 top-2 sm:top-3 text-black hover:text-gray-700 text-lg"
           >
             ×
@@ -36,6 +46,14 @@ const Index = () => {
             <h1 className="text-lg sm:text-2xl font-bold text-white">Henz Update Hub</h1>
           </div>
           <div className="flex gap-2 sm:gap-3">
+            <Button
+              onClick={handleJoinChannel}
+              variant="outline"
+              className="bg-gradient-to-r from-blue-500 to-purple-500 border-0 text-white hover:from-blue-600 hover:to-purple-600 text-xs sm:text-sm px-3 sm:px-4 py-1 sm:py-2 animate-pulse"
+            >
+              <ExternalLink className="h-3 w-3 mr-1" />
+              Join Channel
+            </Button>
             <Link to="/register">
               <Button variant="outline" className="bg-transparent border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-white text-xs sm:text-sm px-3 sm:px-4 py-1 sm:py-2">
                 Register

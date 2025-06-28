@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
@@ -13,11 +14,14 @@ import {
   Banknote,
   Wallet,
   MessageCircle,
-  Gift
+  Gift,
+  ExternalLink
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
+import { useClickSound } from '@/hooks/useClickSound';
+import { jsonStorage } from '@/utils/jsonStorage';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -28,17 +32,20 @@ const Layout = ({ children }: LayoutProps) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { playClickSound } = useClickSound();
 
-  const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+  const currentUser = JSON.parse(jsonStorage.getItem('currentUser') || '{}');
   const isAdmin = currentUser.email === 'EmmyHenz17@gmail.com';
 
   const handleLogout = () => {
-    localStorage.removeItem('currentUser');
-    localStorage.removeItem('isAdmin');
+    playClickSound();
+    jsonStorage.removeItem('currentUser');
+    jsonStorage.removeItem('isAdmin');
     navigate('/');
   };
 
   const copyUserId = () => {
+    playClickSound();
     if (currentUser.id) {
       navigator.clipboard.writeText(currentUser.id);
       toast({
@@ -46,6 +53,11 @@ const Layout = ({ children }: LayoutProps) => {
         description: 'User ID copied to clipboard'
       });
     }
+  };
+
+  const handleJoinChannel = () => {
+    playClickSound();
+    window.open('https://t.me/+DFTqvLsv_zc4NDY0', '_blank');
   };
 
   const navItems = [
@@ -70,7 +82,7 @@ const Layout = ({ children }: LayoutProps) => {
         <div className="container mx-auto px-3 sm:px-4">
           <div className="flex items-center justify-between h-14 sm:h-16">
             {/* Logo */}
-            <Link to="/dashboard" className="flex items-center gap-2">
+            <Link to="/dashboard" className="flex items-center gap-2" onClick={playClickSound}>
               <div className="h-7 w-7 sm:h-8 sm:w-8 bg-blue-500 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm sm:text-base">H</span>
               </div>
@@ -104,7 +116,10 @@ const Layout = ({ children }: LayoutProps) => {
 
               {/* Mobile Menu Button */}
               <button
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                onClick={() => {
+                  playClickSound();
+                  setIsMobileMenuOpen(!isMobileMenuOpen);
+                }}
                 className="md:hidden text-white p-2"
               >
                 {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -130,7 +145,10 @@ const Layout = ({ children }: LayoutProps) => {
                   <li key={item.path}>
                     <Link
                       to={item.path}
-                      onClick={() => setIsMobileMenuOpen(false)}
+                      onClick={() => {
+                        playClickSound();
+                        setIsMobileMenuOpen(false);
+                      }}
                       className={`
                         flex items-center gap-3 px-3 sm:px-4 py-3 sm:py-3 rounded-lg transition-colors min-h-[44px] touch-manipulation
                         ${isActive 
@@ -146,6 +164,17 @@ const Layout = ({ children }: LayoutProps) => {
                 );
               })}
             </ul>
+
+            {/* Join Channel Button */}
+            <div className="mt-4">
+              <button
+                onClick={handleJoinChannel}
+                className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 py-3 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all duration-300 flex items-center justify-center gap-2 animate-pulse"
+              >
+                <ExternalLink className="h-4 w-4" />
+                <span className="text-sm font-medium">Join Channel</span>
+              </button>
+            </div>
 
             <div className="mt-6 sm:mt-8">
               <Button
